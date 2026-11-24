@@ -6,7 +6,7 @@
  * https://github.com/OWNER/routine-timer-card  ·  MIT licence
  */
 (() => {
-const VERSION = '2.0.1';
+const VERSION = '2.1.0';
 
 /* ---------------------------------------------------------------- texts */
 const TXT = {
@@ -166,7 +166,7 @@ const fill = (t, s) => String(t || '').replace(/\{name\}/g, s.name || '').replac
 const U = (css) => css.replace(/@(\d+(?:\.\d+)?)/g, 'calc($1px * var(--u))');
 const STYLE = U(`
 :host{display:block}
-.w{position:relative;box-sizing:border-box;padding:@16 @24;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);grid-template-rows:minmax(0,1fr) auto;gap:@14;background:var(--rtc-background,#0b0f17);color:#fff;font-family:var(--paper-font-body1_-_font-family,Roboto,sans-serif);user-select:none;-webkit-user-select:none;overflow:hidden;border-radius:var(--ha-card-border-radius,12px)}
+.w{position:relative;box-sizing:border-box;padding:@16 var(--rtc-pad-x,@24);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);grid-template-rows:minmax(0,1fr) auto;gap:@14;background:var(--rtc-background,#0b0f17);color:#fff;font-family:var(--paper-font-body1_-_font-family,Roboto,sans-serif);user-select:none;-webkit-user-select:none;overflow:hidden;border-radius:var(--ha-card-border-radius,12px)}
 .w.full{height:100vh;border-radius:0}
 .w.box{aspect-ratio:16/10}
 .big{background:#161c28;border-radius:@24;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:@10;padding:@16;position:relative;min-height:0}
@@ -472,6 +472,7 @@ class RoutineTimerCard extends HTMLElement {
     if (!this._h || !this._w || !this._c) return;
     const h = this._h, c = this._c, real = new Date();
     this._w.className = `w ${c.full_height ? 'full' : 'box'}`;
+    if (c.side_padding != null) this._w.style.setProperty('--rtc-pad-x', `calc(${Number(c.side_padding) || 0}px * var(--u))`);
     const out = (html) => { if (html !== this._html) { this._html = html; this._w.innerHTML = html; } };
     if (!c.routines.some((r) => r.steps.length)) { out(`<div class="empty">${esc(tr(h, 'noSteps'))}</div>`); return; }
     const clockOf = (d) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
@@ -580,7 +581,7 @@ const ED_TXT = {
     state_entity: 'Status helper for automations (input_text, optional)', notify_service: 'Notify service for reminders (e.g. notify.mobile_app_phone)',
     weather_entity: 'Weather for clothing advice (optional)', tts_engine: 'Voice: text-to-speech engine (optional, else the browser voice)',
     sound: 'Sounds', sound_cast: 'Only on cast displays', sound_always: 'On every screen', sound_off: 'Off', warn_minutes: 'Warning beep … minutes before a step ends (0 = off)',
-    volume: 'Volume (%)', full_height: 'Fill the whole screen (panel view)', show_controls: 'Show pause and next-step buttons', rewards: 'Rewards and stars',
+    volume: 'Volume (%)', side_padding: 'Space left and right (e.g. for navigation arrows)', full_height: 'Fill the whole screen (panel view)', show_controls: 'Show pause and next-step buttons', rewards: 'Rewards and stars',
     skip_calendar: 'Skip routines when this calendar has something today (holidays)', skip_keywords: 'Only for events containing (comma separated, empty = all-day events)',
     name: 'Name', icon: 'Picture (icon)', picture: 'Photo instead of icon: URL or person entity (optional)', color: 'Colour',
     alternate_weeks: 'Present every other week', week_start: 'A date in a week this person IS present',
@@ -603,7 +604,7 @@ const ED_TXT = {
     state_entity: 'Status-helper voor automatiseringen (input_text, optioneel)', notify_service: 'Meldingsdienst voor herinneringen (bijv. notify.mobile_app_telefoon)',
     weather_entity: 'Weer voor kledingadvies (optioneel)', tts_engine: 'Stem: spraakdienst (optioneel, anders de stem van de browser)',
     sound: 'Geluid', sound_cast: 'Alleen op cast-schermen', sound_always: 'Op elk scherm', sound_off: 'Uit', warn_minutes: 'Waarschuwingspiep … minuten voor het einde van een stap (0 = uit)',
-    volume: 'Volume (%)', full_height: 'Hele scherm vullen (paneelweergave)', show_controls: 'Pauze- en volgende-stap-knop tonen', rewards: 'Beloning en sterren',
+    volume: 'Volume (%)', side_padding: 'Ruimte links en rechts (bijv. voor navigatiepijlen)', full_height: 'Hele scherm vullen (paneelweergave)', show_controls: 'Pauze- en volgende-stap-knop tonen', rewards: 'Beloning en sterren',
     skip_calendar: 'Routines overslaan als deze agenda vandaag iets heeft (vakanties)', skip_keywords: 'Alleen bij afspraken met (komma-gescheiden, leeg = hele-dag-afspraken)',
     name: 'Naam', icon: 'Plaatje (icoon)', picture: 'Foto i.p.v. icoon: URL of persoon-entiteit (optioneel)', color: 'Kleur',
     alternate_weeks: 'Om de week aanwezig', week_start: 'Een datum in een week dat deze persoon er WEL is',
@@ -769,7 +770,7 @@ ${o.color ? `<input type="color" value="${esc(/^#[0-9a-f]{6}$/i.test(it.color ||
       title: c.title || '', store_entity: c.store_entity || '', state_entity: c.state_entity || '', notify_service: c.notify_service || '',
       weather_entity: c.weather_entity || '', tts_engine: c.tts_engine || '', sound: c.sound || 'cast', warn_minutes: c.warn_minutes != null ? c.warn_minutes : 5,
       volume: c.volume != null ? c.volume : 70, full_height: c.full_height !== false, show_controls: c.show_controls !== false, rewards: c.rewards !== false,
-      skip_calendar: c.skip_calendar || '', skip_keywords: c.skip_keywords || '',
+      skip_calendar: c.skip_calendar || '', skip_keywords: c.skip_keywords || '', side_padding: c.side_padding != null ? c.side_padding : 24,
     };
     root.appendChild(this._form(gen, [
       { name: 'title', selector: { text: {} } },
@@ -783,6 +784,7 @@ ${o.color ? `<input type="color" value="${esc(/^#[0-9a-f]{6}$/i.test(it.color ||
         { name: 'warn_minutes', selector: { number: { min: 0, max: 30, mode: 'box' } } },
       ] },
       { name: 'volume', selector: { number: { min: 0, max: 100, step: 5, mode: 'slider', unit_of_measurement: '%' } } },
+      { name: 'side_padding', selector: { number: { min: 0, max: 200, mode: 'box', unit_of_measurement: 'px' } } },
       { name: 'skip_calendar', selector: { entity: { domain: 'calendar' } } },
       { name: 'skip_keywords', selector: { text: {} } },
       { type: 'grid', name: '', schema: [{ name: 'full_height', selector: { boolean: {} } }, { name: 'show_controls', selector: { boolean: {} } }, { name: 'rewards', selector: { boolean: {} } }] },
