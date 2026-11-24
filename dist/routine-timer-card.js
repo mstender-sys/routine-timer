@@ -6,7 +6,7 @@
  * https://github.com/OWNER/routine-timer-card  ·  MIT licence
  */
 (() => {
-const VERSION = '2.0.0';
+const VERSION = '2.0.1';
 
 /* ---------------------------------------------------------------- texts */
 const TXT = {
@@ -18,7 +18,7 @@ const TXT = {
     dry: 'dry', rain: 'rain', snow: 'snow', thick: 'warm coat', coat: 'coat', hat: 'hat', gloves: 'gloves', cardigan: 'jumper',
     tshirt: 't-shirt', raincoat: 'raincoat', boots: 'boots', snowboots: 'snow boots', ready: '{name} finished {what}',
     noSteps: 'Add a routine with steps in the card editor.', reward: 'Well done, {names}!', rewardSub: 'everything done', stars: '{n} this week',
-    paused: 'Paused', skip: 'Next step', pause: 'Pause', resume: 'Continue', allReady: 'Everyone is ready! 🎉',
+    paused: 'Paused', skip: 'Next step', startNow: 'Start now', pause: 'Pause', resume: 'Continue', allReady: 'Everyone is ready! 🎉',
     notifyTitle: 'Routine', notifyMsg: '{names}: "{what}" is not checked off yet', leaveAt: 'leave at {t}',
   },
   nl: {
@@ -29,7 +29,7 @@ const TXT = {
     dry: 'droog', rain: 'regen', snow: 'sneeuw', thick: 'dikke jas', coat: 'jas', hat: 'muts', gloves: 'handschoenen', cardigan: 'vest',
     tshirt: 't-shirt', raincoat: 'regenjas', boots: 'laarzen', snowboots: 'snowboots', ready: '{name} klaar met {what}',
     noSteps: 'Voeg in de kaart-editor een routine met stappen toe.', reward: 'Goed gedaan, {names}!', rewardSub: 'alles af', stars: '{n} deze week',
-    paused: 'Gepauzeerd', skip: 'Volgende stap', pause: 'Pauze', resume: 'Verder', allReady: 'Iedereen is klaar! 🎉',
+    paused: 'Gepauzeerd', skip: 'Volgende stap', startNow: 'Nu beginnen', pause: 'Pauze', resume: 'Verder', allReady: 'Iedereen is klaar! 🎉',
     notifyTitle: 'Routine', notifyMsg: '{names}: "{what}" is nog niet afgevinkt', leaveAt: 'vertrek {t}',
   },
 };
@@ -351,8 +351,8 @@ class RoutineTimerCard extends HTMLElement {
     const S = this._state(x.r.id), now = Date.now();
     if (what === 'pause') {
       if (S.p) { S.o -= (now - S.p) / 1000; S.p = 0; } else S.p = now;
-    } else if (what === 'skip' && x.cur) {
-      const target = x.next ? x.next.a : x.end;
+    } else if (what === 'skip' && (x.cur || x.nm < x.start)) {
+      const target = x.cur ? (x.next ? x.next.a : x.end) : x.start;
       S.o += (target - x.nm) * 60 + 1;
     }
     this._save(S);
@@ -529,7 +529,10 @@ class RoutineTimerCard extends HTMLElement {
       else this._lead(desired);
       this._lastStep = undefined; this._lastObj = null; this._seen = true;
       if (finished) big = `${head}<div class="msg">${esc(x.r.done_message || tr(h, 'done'))}<small>${esc(tr(h, 'doneSub'))}</small></div>${this._stars(S, x.here)}`;
-      else big = `${head}<div class="msg">${esc(tr(h, 'sleep'))}<small>${esc(tr(h, 'sleepSub', { what: st[0].short || st[0].name, t: hhmm(start) }))}</small></div>`;
+      else {
+        big = `${head}<div class="msg">${esc(tr(h, 'sleep'))}<small>${esc(tr(h, 'sleepSub', { what: st[0].short || st[0].name, t: hhmm(start) }))}</small></div>`;
+        if (c.show_controls !== false) big += `<div class="ctl"><button data-ctl="skip" title="${esc(tr(h, 'startNow'))}"><ha-icon icon="mdi:play"></ha-icon></button></div>`;
+      }
     }
     const rows = [...st.map((s, i) => ({ s, i })), ...side.map((s) => ({ s, i: -1 }))].sort((a, b) => a.s.a - b.s.a || (a.i < 0) - (b.i < 0));
     const list = rows.map(({ s, i }) => {
