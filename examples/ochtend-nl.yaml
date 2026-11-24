@@ -1,0 +1,41 @@
+# Voorbeeld: schoolochtend en bedtijd voor drie kinderen, twee daarvan om de week
+type: custom:routine-timer-card
+store_entity: input_text.routine_opslag        # Helper > Tekst, maximale lengte 255
+state_entity: input_text.routine_status        # optioneel: voor eigen automatiseringen
+notify_service: notify.mobile_app_iphone       # optioneel: herinnering als iets niet is afgevinkt
+weather_entity: weather.home
+tts_engine: tts.home_assistant_cloud
+skip_calendar: calendar.schoolvakanties        # optioneel: geen routine op vakantiedagen
+sound: cast
+volume: 70
+people:
+  - { id: s, name: Sam, icon: mdi:snake, color: "#3d8fe0", alternate_weeks: true, week_start: "2026-11-24" }
+  - { id: e, name: Evi, icon: rtc:lion, color: "#43a047", alternate_weeks: true, week_start: "2026-11-24" }
+  - { id: h, name: Hugo, icon: mdi:cat, color: "#e24b4a", picture: person.hugo }
+routines:
+  - id: ochtend
+    name: Ochtend
+    days: [mon, tue, wed, thu, fri]
+    end_time: "08:05"
+    end_label: naar school
+    done_message: Fijne dag op school! 🎒
+    steps:
+      - { id: op, name: Opstaan en aankleden, short: aankleden, start: "06:30", icon: mdi:tshirt-crew, color: "#7f9cf5", big_timer: 3, script_start: script.kinderkamer_licht_aan }
+      - { id: eten, name: Ontbijten, short: ontbijten, start: "07:00", icon: mdi:food-croissant, color: "#f5a623" }
+      - { id: tand, name: Tanden poetsen, short: tanden poetsen, start: "07:30", icon: mdi:toothbrush, color: "#5dcaa5", sound_start: voice, say_start: "Tijd om je tanden te poetsen!", notify_unchecked: true }
+      - { id: haar, name: Haren kammen, short: haren kammen, start: "07:40", icon: rtc:comb, color: "#ef6f8a" }
+      - { id: tas, name: Tas inpakken, short: tas inpakken, start: "07:45", icon: mdi:bag-personal, color: "#4fb3d9" }
+      - { id: gym, name: Gymtas mee, short: gymtas, start: "07:46", days: [wed], icon: mdi:basketball, color: "#c48a5a" }
+      - { id: spel, name: Spelen, short: spelen, start: "07:47", icon: mdi:toy-brick, color: "#9a7ff5", checkable: false }
+      - { id: wc, name: Naar de wc, short: Evi naar de wc, start: "07:55", duration: 5, people: [e], icon: mdi:toilet, color: "#c48a5a" }
+      - { id: jas, name: Schoenen en jas aan, short: schoenen aan, start: "08:00", icon: mdi:shoe-sneaker, color: "#e24b4a", script_end: script.radio_uit }
+  - id: bed
+    name: Bedtijd
+    days: [mon, tue, wed, thu, fri, sat, sun]
+    end_time: "19:45"
+    end_label: slapen
+    done_message: Slaap lekker 🌙
+    steps:
+      - { id: pyj, name: Pyjama aan, short: pyjama aan, start: "19:00", icon: mdi:tshirt-crew-outline, color: "#9a7ff5" }
+      - { id: tand2, name: Tanden poetsen, short: tanden poetsen, start: "19:15", icon: mdi:toothbrush, color: "#5dcaa5" }
+      - { id: boek, name: Voorlezen, short: voorlezen, start: "19:25", icon: mdi:book-open-variant, color: "#f5a623", checkable: false, sound_end: gong }
